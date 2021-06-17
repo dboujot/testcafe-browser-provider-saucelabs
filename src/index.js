@@ -184,9 +184,8 @@ export default {
         this.connectorPromise = this.connectorPromise
             .then(async connector => {
                 if (!connector) {
-                    connector = new SauceLabsConnector(process.env['SAUCE_USERNAME'], process.env['SAUCE_ACCESS_KEY'], {
-                        connectorLogging: false
-                    });
+                    const connectOptions = process.env['SAUCE_CONNECT_CONFIG_PATH'] ? await readConfigFromFile(process.env['SAUCE_CONNECT_CONFIG_PATH']) : {connectorLogging: false}
+                    connector = new SauceLabsConnector(process.env['SAUCE_USERNAME'], process.env['SAUCE_ACCESS_KEY'], connectOptions);
 
                     await connector.connect();
                 }
@@ -195,6 +194,8 @@ export default {
                 return connector;
             })
             .catch(error => {
+
+                console.log("_getConnector error = ",error);
                 this.tunnelConnectRetryCount++;
 
                 if (this.tunnelConnectRetryCount > MAX_TUNNEL_CONNECT_RETRY_COUNT)
